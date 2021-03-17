@@ -244,13 +244,21 @@ func CalculateHeadersToPropagate(propagationCfg [][]string, claims map[string]in
 	propagated := make(map[string]string)
 
 	for _, tuple := range propagationCfg {
-		fromClaim := tuple[0]
+		fromClaim := strings.Split(tuple[0], ".")
 		toHeader := tuple[1]
-		tmp, ok := claims[fromClaim].(string)
+		var tmp interface{}
+		for _, key := range fromClaim {
+			if tmp == nil {
+				tmp = claims[key]
+			} else {
+				tmp = tmp.(map[string]interface{})[key]
+			}
+		}
+		strTmp, ok := tmp.(string)
 		if !ok {
 			continue
 		}
-		propagated[toHeader] = tmp
+		propagated[toHeader] = strTmp
 	}
 
 	return propagated, nil
